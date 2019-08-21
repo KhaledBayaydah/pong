@@ -1,0 +1,303 @@
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.WindowConstants;
+import java.awt.Dimension;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.event.*;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.util.*;
+import javax.swing.Timer;
+import java.lang.Math;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseEvent;
+
+public class Pong {
+    private JFrame frame;
+
+    public Pong() {
+        frame = new JFrame("Bar Graph");
+        frame.setSize(1000, 600);
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        frame.setPreferredSize(frame.getSize());
+        frame.add(new DrawBars(frame.getSize()));
+        frame.pack();
+        frame.setVisible(true);
+    }
+
+    public static void main(String... argv) {
+        new Pong();
+    }
+
+    public static class DrawBars extends JPanel  implements   KeyListener, ActionListener, MouseListener {
+        /*
+         * Declare Class Variables Here
+         */
+        // I replaced your way of making animation by using a timer because the game needs to press keys
+        Timer tm = new Timer(6,this);
+        
+        // Initializing variables like the velocities
+        int picker = 0;// to be able to develop the game into one with two modes
+        int x = 300;
+        int speedx = 3;
+        int y = 300;
+        int speedy =3;
+        int m = 300;
+        int speedm = 0;
+        int c = 300;
+        int speedc = 0;
+        int f = 0;
+        int n = 0;
+        String score1 = Integer.toString(f); 
+        String score2 = Integer.toString(n);
+        int o = 120;
+        int p = 120;
+        int j =120;
+        int h =120;
+        int xBlack = 300;
+        
+        public DrawBars(Dimension dimension) {
+            setSize(dimension);
+            setPreferredSize(dimension);
+            addKeyListener(this);// added keyListener
+            addMouseListener(this);
+            tm.start();//linked to the timer
+            setFocusable(true);
+            setFocusTraversalKeysEnabled(false);
+            
+
+            
+
+        }
+        @Override
+        public void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D)g;//g2 is the graphics object that we need to use
+            //to draw things to the screen
+            Dimension d = getSize();
+            //create a background
+            g2.setColor(Color.black);
+            g2.fillRect(0, 0, d.width, d.height);
+            /**/
+          
+            //This is the face of the game where the user chooses one of the modes.
+            if(picker==0){
+            Color gray = new Color(72,77,73);
+            g2.setColor(gray);
+            g2.fillRect(400,50,200,200);
+            g2.fillRect(400,300, 200, 200);
+           }
+           //Once the player choses #1 a game will appear that only one player can play
+           if(picker==1){
+               
+               g2.setColor(Color.white);
+               g2.fillOval(x,y,10,10);//ball
+               g2.fillRect(m,552,120,10);//paddle
+               g2.fillRect(0,0,1000,30);//the goal
+               g2.setColor(Color.black);
+               g2.fillRect(xBlack, 0, 120,30);//the specific goal
+               bounceBall();// a method to make the ball bounce and relocate itself once hitting the goal or getting the ball over the edge
+               //an if/else statement to stop the game once the player wins and redirect the user to the beginning where he choses again
+               if(f>=30){
+                picker=0;
+                speedx=0;
+                speedy=0;
+            }
+            }
+            //Once the player choses #2 a game will appear that two players can play
+            if(picker==2){
+               g2.setColor(Color.white);
+               g2.fillOval(x,y,10,10);//ball
+               g2.fillRect(0,m,10,o);//left paddle
+               g2.fillRect(975, c, 10, p);//right paddle
+               bounceBall();
+               if(f>=30 || n >=30){
+                  picker=0;
+                  speedx=0;
+                  speedy=0;}
+            }
+            
+            
+            
+    
+
+            //display Text
+            if(picker==0){
+            g2.setColor(Color.white);
+            g2.setFont (new Font("TimesRoman", Font.PLAIN, 20));
+            g2.drawString("Click here for:" ,  420,80);//text to display, x and y coordinates
+            g2.drawString("Click here for:",420,330);
+            g2.setColor(Color.green);
+            g2.drawString("(One Player Mode)" ,  415,150);
+            g2.drawString("(Two Players Mode)" ,  415,400);}
+            else if(picker==1){
+                g2.setColor(Color.green);
+                g2.setFont (new Font("TimesRoman", Font.PLAIN, 20));
+                g2.drawString("P_Score:"+f ,  10,60);//The score when in 1 player mode
+            }
+            else if(picker==2){
+                g2.setColor(Color.green);
+                g2.setFont (new Font("TimesRoman", Font.PLAIN, 20));
+                g2.drawString("P1: " + f + " || "+"P2: " + n ,  430,21);//The score when in 2 players mode
+            }
+             
+            // end of paintComponent
+           }
+           //to create movement and animation. Also to be able to control the speeds faster from other methods
+           public void actionPerformed(ActionEvent e){
+               if(picker==1 || picker==2){
+            x += speedx;
+            y -= speedy;
+            c += speedc;
+            m += speedm;
+            repaint();}
+            // end of action
+          }
+           
+            //This method makes the ball bounce or relocate itself to a random respawn id it hits certain areas
+        public void bounceBall(){
+         if(picker==1){
+             //relocating the black box (the goal) randomly when the ball hits it
+             if(y<=30 && x>=xBlack && x<=xBlack+120){
+                int max=880, min=0;
+                xBlack =  (int)(Math.random() * ((max - min) +1 )) + min;
+                x=500;
+                y=200;
+                f+=1;//increases the score
+                }
+                //if/else statements to make the ball move in different directions when hit equally divided areas on teh paddle
+                else if(y>=552 && y<=562 && m<=x && x <= m+24){
+                speedx=-4;
+                speedy*=-1;}
+            else if(y>=552 && y<=562 && m+24<=x && x <= m+48){
+                speedx=-2;
+                speedy*=-1;}
+            else if(y>=552 && y<=562 && m+48<=x && x <= m+72){
+                speedx=0;
+                speedy*=-1;}
+            else if(y>=552 && y<=562 && m+72<=x && x <= m+96){
+                speedx=2;
+                speedy*=-1;}
+            else if(y>=552 && y<=562 && m<=x+96 && x <= m+120){
+                speedx=4;
+                speedy*=-1;}
+            else if(x >= 1000)speedx*=-1;
+            else if(x <=0)speedx*=-1;
+            else if(y<=30)speedy*=-1;
+            else if (y>=600){
+                x=500;
+                y=200;
+            while(f>0)f-=1;
+            // decreases teh score
+            }            
+         }
+         else if (picker==2){
+         // relocates teh ball randomly and gives it a random speed when it hits either sides
+             if(x >= 1000){
+            int max=600, min=400;
+            x =  (int)(Math.random() * ((max - min) +1 )) + min;
+            max=250; min=350;
+            y =  (int)(Math.random() * ((max - min) +1 )) + min;
+            max=6; min=-6;
+            speedx =  (int)(Math.random() * ((max - min) +1 )) + min;
+            if(speedx==0){
+                speedx=3;}
+            max=6; min=-6;
+            speedy =  (int)(Math.random() * ((max - min) +1 )) + min;
+            //A while loop to make the countdown stop when score reaches 0
+            while(n>0)n-=1;
+            f+=1;
+         }
+         else if(x<=0){
+            int max=600, min=400;
+            x =  (int)(Math.random() * ((max - min) +1 )) + min;
+            max=250; min=350;
+            y =  (int)(Math.random() * ((max - min) +1 )) + min;
+            max=3; min=-3;
+            speedx =  (int)(Math.random() * ((max - min) +1 )) + min;
+            if(speedx==0){
+                speedx=3;}
+            max=3; min=-3;
+            speedy =  (int)(Math.random() * ((max - min) +1 )) + min;
+            while(f>0)f-=1;
+            n+=1;
+         }
+         else if(y>=560)speedy *= -1;//bounces off the bottom
+         
+         else if(y<=5)speedy *= -1;//bounces off the top
+        
+         else if(x>= 980 && x<=1000 &&  c <= y && y <= c+j)speedx*=-1;//bounces off the left paddle
+        
+         else if(x<=10 && x>=0 && m<=y && y <= m+h)speedx*=-1;//bounces off the right paddle
+          }
+        
+          }
+        
+         
+        //The keyListener methods
+        public void keyPressed(KeyEvent e) {
+            //moves teh paddle left or right
+            if(picker==1){
+            if(e.getKeyCode() == KeyEvent.VK_RIGHT)speedm=4;
+            if(e.getKeyCode() == KeyEvent.VK_LEFT)speedm=-4;}
+            //moves teh paddles up or down
+            if(picker==2){
+            if (e.getKeyCode() == KeyEvent.VK_UP)speedc =-11;
+            if(e.getKeyCode() == KeyEvent.VK_DOWN)speedc=11;      
+            if(e.getKeyCode() == KeyEvent.VK_W)speedm=-11; 
+            if(e.getKeyCode() == KeyEvent.VK_S)speedm=11; 
+        }
+            
+        }
+        // to stop teh paddles when keys are released
+        public void keyReleased(KeyEvent e) {
+            if(picker==1){
+            if(e.getKeyCode() == KeyEvent.VK_RIGHT)speedm=0;
+            if(e.getKeyCode() == KeyEvent.VK_LEFT)speedm=0;}
+            if(picker==2){
+            if (e.getKeyCode() == KeyEvent.VK_UP)speedc =0;
+            if(e.getKeyCode() == KeyEvent.VK_DOWN)speedc=0;      
+            if(e.getKeyCode() == KeyEvent.VK_W)speedm=0; 
+            if(e.getKeyCode() == KeyEvent.VK_S)speedm=0;
+        }
+        }
+
+        public void keyTyped(KeyEvent e) {
+
+        }
+        //mousePressed to choose between the two modes at the beginning using the mouse
+        public void mousePressed(MouseEvent e){
+            if(picker==0){
+            int x = e.getX();
+            int y = e.getY();
+            if(x>=400 &&  x<=600 && y>=50 && y<=250){
+            picker=1;}
+            else if(x>=400 &&  x<=600 && y>=300 && y<=500){
+            picker=2;}
+            
+        }
+        }
+        public void mouseReleased(MouseEvent e) {
+
+        }
+
+        public void mouseEntered(MouseEvent e) {
+
+        }
+
+        public void mouseExited(MouseEvent e) {
+
+        }
+
+        public void mouseClicked(MouseEvent e) {
+
+        }
+        
+        
+
+    }
+}
